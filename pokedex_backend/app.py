@@ -66,7 +66,6 @@ url = os.getenv("DATABASE_URL")
 connection = psycopg2.connect(url)
 
 POKE_API_URL = "https://pokeapi.co/api/v2/pokemon?limit=100&offset=0"
-POKE_PER_PAGE = 100; 
 POKE_TOTAL = [] 
 POKE_INFO_MAPPED = []
 
@@ -136,17 +135,6 @@ def map_pokemon():
 @app.post("/pokemon/bulk")
 def push_pokemon(): 
     return {"message": "sucsscess! got your post!", "result": request.json}, 200
-    
-@app.get("/pokemon/bulk-pagination")
-@cross_origin()
-def populate_pokemon_pagination(): 
-    page = int(request.args.get("page"))
-
-    start = (page - 1) * POKE_PER_PAGE
-    end = page * POKE_PER_PAGE
-
-    result = POKE_INFO_MAPPED[start:end]
-    return {"page": page, "end": end, "start": start, "result": result}, 200
 
 @app.get("/pokemon/bulk-no-pagination")
 @cross_origin()
