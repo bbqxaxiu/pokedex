@@ -1,0 +1,13 @@
+.pokemon__pokemon_info {
+    display: flex; 
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.pokemon__pokemon_info--biography {
+    display: flex; 
+}
+
+.pokemon__button--clicked {
+    color: red; 
+}
