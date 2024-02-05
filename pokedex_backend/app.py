@@ -64,7 +64,6 @@ load_dotenv()
 app = Flask(__name__)
 url = os.getenv("DATABASE_URL")
 connection = psycopg2.connect(url)
-#requests_cache.install_cache('pokemon_cache', backend='sqlite', expire_after=3600)
 
 POKE_API_URL = "https://pokeapi.co/api/v2/pokemon?limit=100&offset=0"
 POKE_PER_PAGE = 100; 
@@ -73,40 +72,14 @@ POKE_INFO_MAPPED = []
 
 CORS(app)
 
-CREATE_POKEMON_TEMP_TABLE = (
-    "CREATE TABLE IF NOT EXISTS pokemon_temp (name TEXT, url TEXT)"
-)
-
-DELETE_POKEMON_TABLE = (
-    "DROP TABLE pokemon_temp" 
-)
-
-INSERT_POKEMON_TEMP_TABLE = (
-    "INSERT INTO pokemon_temp VALUES (%s, %s);"
-)
-
-CREATE_POKEMON_TABLE = (
-    "CREATE TABLE IF NOT EXISTS pokemon (name TEXT PRIMARY KEY, scientific_name TEXT, strengths_name TEXT, strengths_priority INT, health INT, types TEXT)"
-)
-
-DELETE_POKEMON_TABLE = (
-    "DROP TABLE pokemon" 
-)
-
-INSERT_POKEMON_TABLE = (
-    "INSERT INTO pokemon (name, scientific_name, strengths_name, strengths_priority, health, types) VALUES (%s, %s, %s, %s, %s, %s);"
-)
-
 @app.get("/")
 def home():
-    return "BYEEEEB TICHSSS, World!!!12121shfk"
+    return "Hello world"
 
 # Step 1: port pokemon from API 
 def get_pokemon(): 
     print("getting all pokemon info")
     r = requests.get(POKE_API_URL)
-    now = time.ctime(int(time.time()))
-    #print("Time: {0} / Used Cache: {1}".format(now, r.from_cache))
 
     r = r.json()
     results = r["results"]
@@ -115,8 +88,6 @@ def get_pokemon():
         for result in results: 
             POKE_TOTAL.append(result)
         r = requests.get(next_results)
-        now = time.ctime(int(time.time()))
-        #print("Time: {0} / Used Cache: {1}".format(now, r.from_cache))
 
         r = r.json()
         results = r["results"]
@@ -137,14 +108,13 @@ def map_pokemon():
         count+=1
         pokemon_info = requests.get(result["url"])
         print("just got info for " + result["name"])
-        now = time.ctime(int(time.time()))
-        #print("Time: {0} / Used Cache: {1}".format(now, pokemon_info.from_cache))
 
         pokemon_info = pokemon_info.json()
         name = pokemon_info["name"]
         scientific_name = pokemon_info["species"]["name"]
-        # need to do strengths 
+        
         health = pokemon_info["stats"][0]["base_stat"]
+        
         # need to do strengths and types 
         types = pokemon_info["types"][0]["type"]["name"]
         image = pokemon_info["sprites"]["front_default"]
@@ -182,31 +152,6 @@ def populate_pokemon_pagination():
 @cross_origin()
 def populate_pokemon_no_pagination(): 
     return {"result": POKE_INFO_MAPPED}, 200
-
-@app.delete("/api/pokemon")
-def delete_pokemon(): 
-    with connection: 
-        with connection.cursor() as cursor: 
-            cursor.execute(DELETE_POKEMON_TABLE)
-    
-    return {"message": "Pokemon table successfully deleted."}, 200
-
-@app.post("/api/pokemon")
-def create_pokemon(): 
-    data = request.get_json()
-    name = data["name"]
-    scientific_name = data["scientific_name"]
-    strengths_name = data["strengths_name"]
-    strengths_priority = data["strengths_priority"]
-    health = data["health"]
-    types = data["types"]
-
-    with connection: 
-        with connection.cursor() as cursor: 
-            cursor.execute(CREATE_POKEMON_TABLE)
-            cursor.execute(INSERT_POKEMON_TABLE, (name, scientific_name, strengths_name, strengths_priority, health, types,))
-
-    return {"message": f"{name} was sent to me and inserted into the table"}, 200 
 
 if __name__ == "__main__": 
     get_pokemon()
