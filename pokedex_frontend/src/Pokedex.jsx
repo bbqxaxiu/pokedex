@@ -33,7 +33,6 @@ export default function Pokedex() {
     }
 
     const renderPokemon = (pokemon) => {
-        const health = pokemon.health
         const name = pokemon.name
         const image = pokemon.image
         const type = pokemon.types
